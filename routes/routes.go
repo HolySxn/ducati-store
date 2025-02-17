@@ -31,7 +31,12 @@ func SetupRouter() *gin.Engine {
 	router.GET("/inventory/:id", controllers.GetInventoryByID)
 
 	// Customers
-	
+	router.GET("/customers", controllers.GetAllCustomers)
+	router.POST("/customers", controllers.CreateCustomer)
+	router.DELETE("/customers/:id", controllers.DeleteCustomer)
+	router.PUT("/customers/:id", controllers.UpdateCustomer)
+	router.GET("/customers/:id", controllers.GetCustomerByID)
+
 
 	return router
 }

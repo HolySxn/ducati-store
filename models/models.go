@@ -37,7 +37,6 @@ type Customer struct {
 	Email           string               `bson:"email"`
 	Addresses       []string             `bson:"addresses"`
 	PhoneNumbers    []string             `bson:"phoneNumbers"`
-	PurchaseHistory []primitive.ObjectID `bson:"purchaseHistory"`
 }
 
 // Order Model
