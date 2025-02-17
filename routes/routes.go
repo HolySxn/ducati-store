@@ -37,6 +37,12 @@ func SetupRouter() *gin.Engine {
 	router.PUT("/customers/:id", controllers.UpdateCustomer)
 	router.GET("/customers/:id", controllers.GetCustomerByID)
 
+	// Orders
+	router.GET("/orders", controllers.GetAllOrders)
+	router.POST("/orders", controllers.CreateOrder)
+	router.DELETE("/orders/:id", controllers.DeleteOrder)
+	router.PUT("/orders/:id", controllers.UpdateOrder)
+	router.GET("/orders/:id", controllers.GetOrderByID)
 
 	return router
 }
