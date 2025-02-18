@@ -6,9 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
-	router := gin.Default()
-
+func SetupRouter(router *gin.Engine) *gin.Engine {
 	// Motocycles
 	router.GET("/motorcycles", controllers.GetMotorcycles)
 	router.POST("/motorcycles", controllers.AddMotorcycle)

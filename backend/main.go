@@ -5,6 +5,7 @@ import (
 	"ducati-store/routes"
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -14,7 +15,15 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	
+
 	database.ConnectDB()
-	router := routes.SetupRouter()
+
+	router := gin.Default()
+
+	router.Static("/static", "./frontend/build/static")
+	router.StaticFile("/", "./frontend/build/index.html")
+	
+	routes.SetupRouter(router)
 	router.Run(":8080")
 }
