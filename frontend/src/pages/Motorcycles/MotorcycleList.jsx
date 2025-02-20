@@ -157,7 +157,10 @@ const MotorcycleList = () => {
       <div className="list-header">
         <h1 className="page-title">Motorcycles</h1>
         <button
-          onClick={() => setIsFormOpen(true)}
+          onClick={() => {
+            setEditingMotorcycle(null);
+            setIsFormOpen(true);
+          }}
           className="add-button"
         >
           <Plus className="button-icon" />
