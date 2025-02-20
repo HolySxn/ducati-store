@@ -1,39 +1,61 @@
 import React from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 
-const DataTable = ({ data, columns, onEdit, onDelete }) => (
-  <div className="overflow-x-auto bg-white rounded-lg shadow">
-    <table className="min-w-full">
-      <thead className="bg-gray-50">
-        <tr>
-          {columns.map(column => (
-            <th key={column} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {column}
-            </th>
-          ))}
-          <th className="px-6 py-3">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-200">
-        {data.map((item) => (
-          <tr key={item._id}>
-            {columns.map(column => (
-              <td key={column} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {typeof item[column] === 'object' ? JSON.stringify(item[column]) : item[column]}
-              </td>
+const DataTable = ({ data, columns, onEdit, onDelete, onSort, sortConfig = {} }) => {
+  if (!data || data.length === 0) {
+    return <div className="empty-state">No data available</div>;
+  }
+  
+  return (
+    <div className="table-container">
+      <table className="data-table">
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th 
+                key={column.key}
+                onClick={() => column.sortable && onSort(column.key)}
+                className={column.sortable ? 'sortable' : ''}
+              >
+                {column.header}
+                {sortConfig.key === column.key && (
+                  <span className="sort-indicator">
+                    {sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}
+                  </span>
+                )}
+              </th>
             ))}
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <button onClick={() => onEdit(item)} className="text-indigo-600 hover:text-indigo-900 mr-4">
-                Edit
-              </button>
-              <button onClick={() => onDelete(item._id)} className="text-red-600 hover:text-red-900">
-                Delete
-              </button>
-            </td>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody>
+          {data.map((item, index) => (
+            <tr key={item.ID || index}>
+              {columns.map((column) => (
+                <td key={`${item.ID || index}-${column.key}`}>
+                  {column.render ? column.render(item[column.key]) : item[column.key]}
+                </td>
+              ))}
+              <td className="actions">
+                <button 
+                  onClick={() => onEdit(item)} 
+                  className="action-button edit"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button 
+                  onClick={() => onDelete(item.ID)} 
+                  className="action-button delete"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 export default DataTable;

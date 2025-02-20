@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { createItem, updateItem } from '../../services/api';
+import { createItem, updateItem, fetchData } from '../../services/api';
 
 const MotorcycleForm = ({ motorcycle = null, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ const MotorcycleForm = ({ motorcycle = null, onSave, onCancel }) => {
     status: 'Available',
     categoryId: ''
   });
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -20,6 +21,20 @@ const MotorcycleForm = ({ motorcycle = null, onSave, onCancel }) => {
       setFormData(motorcycle);
     }
   }, [motorcycle]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoriesData = await fetchData('categories');
+        console.log(categoriesData);
+        setCategories(categoriesData);
+      } catch (err) {
+        setError('Failed to fetch categories');
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -119,9 +134,24 @@ const MotorcycleForm = ({ motorcycle = null, onSave, onCancel }) => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
             <option value="Available">Available</option>
-            <option value="Sold Out">Sold Out</option>
-            <option value="On Order">On Order</option>
-            <option value="Under Maintenance">Under Maintenance</option>
+            <option value="Not Available">Sold Out</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <select
+            value={formData.categoryId}
+            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            required
+          >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.ID} value={category.ID}>
+                {category.Name}
+              </option>
+            ))}
           </select>
         </div>
 

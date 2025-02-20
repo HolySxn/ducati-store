@@ -9,7 +9,7 @@ BACKEND_PID=$!
 # Navigate to the frontend directory and start the frontend server
 echo "Starting frontend server..."
 cd ../frontend
-npm start &
+npx vite &
 FRONTEND_PID=$!
 
 # Function to stop both servers

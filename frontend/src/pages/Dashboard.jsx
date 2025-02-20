@@ -81,19 +81,9 @@ const Dashboard = () => {
           <div className="space-y-6">
             <div className="section-header">
               <h2>{activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}</h2>
-              <button className="add-button">Add New</button>
             </div>
             
             {renderSection()}
-
-            <div className="table-container">
-              <DataTable
-                data={data}
-                columns={Object.keys(data[0] || {}).filter(key => key !== '_id')}
-                onEdit={(item) => {/* TODO: Edit modal */}}
-                onDelete={handleDelete}
-              />
-            </div>
           </div>
         )}
       </div>

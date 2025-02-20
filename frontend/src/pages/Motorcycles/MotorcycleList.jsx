@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import DataTable from '../../components/tables/DataTable';
 import MotorcycleForm from './MotorcycleForm';
 import { fetchData, deleteItem } from '../../services/api';
+import '../../styles/MotorcycleList.css';
 
 const MotorcycleList = () => {
   const [motorcycles, setMotorcycles] = useState([]);
@@ -11,17 +12,84 @@ const MotorcycleList = () => {
   const [error, setError] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMotorcycle, setEditingMotorcycle] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  const columns = [
+    {
+      key: 'Model',
+      header: 'Model',
+      sortable: true
+    },
+    {
+      key: 'Brand',
+      header: 'Brand',
+      sortable: true
+    },
+    {
+      key: 'Category',
+      header: 'Category',
+      sortable: true
+    },
+    {
+      key: 'Year',
+      header: 'Year',
+      sortable: true
+    },
+    {
+      key: 'Price',
+      header: 'Price',
+      sortable: true,
+      render: (value) => `$${value?.toLocaleString() || 0}`
+    },
+    {
+      key: 'Status',
+      header: 'Status',
+      sortable: true,
+      render: (value) => (
+        <span className={`status-badge ${value?.toLowerCase()}`}>
+          {value || 'N/A'}
+        </span>
+      )
+    },
+    {
+      key: 'Specifications',
+      header: 'Specifications',
+      render: (specs) => {
+        if (!specs) return 'N/A';
+        return (
+          <div className="specs-container">
+            {specs.map((spec, index) => (
+              <span key={index} className="spec-item">
+                {spec}
+              </span>
+            ))}
+          </div>
+        );
+      }
+    }
+  ];
 
   const fetchMotorcycles = async () => {
     setLoading(true);
     try {
-      const data = await fetchData('motorcycles');
-      setMotorcycles(data);
+      const motorcycles = await fetchData('motorcycles');
+      const categories = await fetchData('categories');
+      console.log('Fetched motorcycles:', motorcycles);
+      console.log('Fetched categories:', categories);
+
+      const motorcyclesWithCategories = motorcycles.map(motorcycle => {
+        const category = categories.find(cat => cat.ID === motorcycle.CategoryID);
+        return { ...motorcycle, Category: category ? category.Name : 'Unknown' };
+      });
+
+      console.log('Motorcycles with categories:', motorcyclesWithCategories);
+      setMotorcycles(motorcyclesWithCategories);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch motorcycles');
+      setError('Failed to fetch motorcycles. Please try again later.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -29,11 +97,15 @@ const MotorcycleList = () => {
   }, []);
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this motorcycle?')) {
+      return;
+    }
+
     try {
       await deleteItem('motorcycles', id);
-      fetchMotorcycles();
+      await fetchMotorcycles();
     } catch (err) {
-      setError('Failed to delete motorcycle');
+      setError('Failed to delete motorcycle. Please try again.');
     }
   };
 
@@ -48,30 +120,47 @@ const MotorcycleList = () => {
     await fetchMotorcycles();
   };
 
-  const tableColumns = [
-    'model',
-    'brand',
-    'year',
-    'price',
-    'status',
-    'specifications'
-  ];
+  const handleSort = (key) => {
+    setSortConfig((prevSort) => ({
+      key,
+      direction:
+        prevSort.key === key && prevSort.direction === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+
+  const sortedMotorcycles = React.useMemo(() => {
+    if (!sortConfig.key) return motorcycles;
+
+    const sorted = [...motorcycles].sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    console.log('Sorted motorcycles:', sorted);
+    return sorted;
+  }, [motorcycles, sortConfig]);
 
   return (
-    <div className="p-6">
+    <div className="motorcycle-list">
       {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="destructive" className="error-alert">
+          <AlertCircle className="alert-icon" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Motorcycles</h1>
+      <div className="list-header">
+        <h1 className="page-title">Motorcycles</h1>
         <button
           onClick={() => setIsFormOpen(true)}
-          className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
+          className="add-button"
         >
+          <Plus className="button-icon" />
           Add New Motorcycle
         </button>
       </div>
@@ -86,15 +175,18 @@ const MotorcycleList = () => {
           }}
         />
       ) : loading ? (
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+        <div className="loading-container">
+          <Loader2 className="loading-spinner" />
+          <span>Loading motorcycles...</span>
         </div>
       ) : (
         <DataTable
-          data={motorcycles}
-          columns={tableColumns}
+          data={sortedMotorcycles}
+          columns={columns}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onSort={handleSort}
+          sortConfig={sortConfig}
         />
       )}
     </div>
