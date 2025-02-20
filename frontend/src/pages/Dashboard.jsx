@@ -5,7 +5,12 @@ import Sidebar from '../components/layout/Sidebar';
 import DataTable from '../components/tables/DataTable';
 import { fetchData, deleteItem } from '../services/api';
 import MotorcycleList from './Motorcycles/MotorcycleList';
-// Import other section components as they're created
+// import CategoryList from './Categories/CategoryList';
+// import CustomerList from './Customers/CustomerList';
+// import OrderList from './Orders/OrderList';
+// import ServiceRecordList from './ServiceRecords/ServiceRecordList';
+// import InventoryList from './Inventory/InventoryList';
+import '../styles/Dashboard.css';
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState('motorcycles');
@@ -42,19 +47,28 @@ const Dashboard = () => {
     switch (activeSection) {
       case 'motorcycles':
         return <MotorcycleList />;
-      // Add other sections as they're created
+      case 'categories':
+        return <CategoryList />;
+      case 'customers':
+        return <CustomerList />;
+      case 'orders':
+        return <OrderList />;
+      case 'service':
+        return <ServiceRecordList />;
+      case 'inventory':
+        return <InventoryList />;
       default:
         return <div>Section under construction</div>;
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="dashboard-container">
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      <div className="flex-1 overflow-auto p-8">
+      <div className="main-content">
         {error && (
           <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -65,26 +79,21 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
-              </h2>
-              <button
-                onClick={() => {/* TODO: Add new item modal */}}
-                className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
-              >
-                Add New
-              </button>
+            <div className="section-header">
+              <h2>{activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}</h2>
+              <button className="add-button">Add New</button>
             </div>
             
             {renderSection()}
 
-            <DataTable
-              data={data}
-              columns={Object.keys(data[0] || {}).filter(key => key !== '_id')}
-              onEdit={(item) => {/* TODO: Edit modal */}}
-              onDelete={handleDelete}
-            />
+            <div className="table-container">
+              <DataTable
+                data={data}
+                columns={Object.keys(data[0] || {}).filter(key => key !== '_id')}
+                onEdit={(item) => {/* TODO: Edit modal */}}
+                onDelete={handleDelete}
+              />
+            </div>
           </div>
         )}
       </div>
